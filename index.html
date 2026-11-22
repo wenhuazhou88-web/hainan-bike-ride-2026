@@ -6,7 +6,7 @@
 <title>Jeffrey 环岛骑行 · 2026</title>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta property="og:title" content="Jeffrey 环岛骑行 · 2026">
-<meta property="og:description" content="海南岛 11 天 963 km · 已完成 6 天 572 km">
+<meta property="og:description" content="海南岛 11 天 963 km · 已完成 6 天 572 km · 逐日路线与数据">
 <meta property="og:image" content="https://wenhuazhou88-web.github.io/hainan-bike-ride-2026/preview.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
@@ -63,10 +63,37 @@
   .st-label { font-size: 11px; fill: #b9d5e9; paint-order: stroke; stroke: #071a2b; stroke-width: 3.2px; stroke-linejoin: round; }
   .st-label.done { fill: #ffd9a3; }
   .st-label.start { fill: #ffe9b8; font-weight: 700; }
+
+  /* 逐日明细 */
+  .days { margin-top: 16px; }
+  .days-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 9px; }
+  .days-h h2 { font-size: 14px; margin: 0; letter-spacing: .3px; }
+  .days-h span { font-size: 11.5px; color: #7fa3bd; }
+  .day {
+    display: grid; grid-template-columns: 42px 1fr auto; gap: 4px 10px; align-items: center;
+    background: rgba(255,255,255,.04); border-left: 3px solid #4dabf7;
+    border-radius: 8px; padding: 8px 11px; margin-bottom: 5px; cursor: pointer;
+    transition: background .16s, box-shadow .16s;
+  }
+  .day:hover { background: rgba(255,255,255,.075); }
+  .day.done { border-left-color: #ff9f43; }
+  .day.act { background: rgba(255,159,67,.13); box-shadow: inset 0 0 0 1px rgba(255,159,67,.5); }
+  .day .d { font: 700 11.5px ui-monospace, Menlo, monospace; color: #9fc4dd; }
+  .day .r { font-size: 13px; font-weight: 600; line-height: 1.35; }
+  .day .r small { display: block; font-weight: 400; font-size: 11px; color: #7fa3bd; margin-top: 1px; }
+  .day .num { text-align: right; font-size: 12px; color: #b9d5e9; font-variant-numeric: tabular-nums; line-height: 1.35; }
+  .day .num b { color: #ffd479; font-weight: 700; }
+  .day .num small { display: block; font-size: 10.5px; color: #8fb3cc; margin-top: 1px; }
+  .day.hill .d::after { content: ' \25B2'; color: #ff6b6b; font-size: 10px; }
+  .day.total { cursor: default; background: rgba(255,255,255,.02); border-left-color: #8fb3cc; }
+  .day.total:hover { background: rgba(255,255,255,.02); }
   @media (max-width: 560px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
     .stat .v { font-size: 17px; }
     .legend { margin-left: 0; }
+    .day { grid-template-columns: 38px 1fr auto; padding: 7px 9px; }
+    .day .r { font-size: 12.5px; }
+    .day .num { font-size: 11.5px; }
   }
 </style>
 </head>
@@ -136,6 +163,14 @@
       <span><i class="dot todo"></i>待骑 5 天</span>
       <span><i class="dot ring"></i>爬坡日</span>
     </div>
+  </div>
+
+  <div class="days">
+    <div class="days-h">
+      <h2>逐日路线与数据</h2>
+      <span>点某一天，地图跳到那天</span>
+    </div>
+    <div id="days"></div>
   </div>
 
   <div class="foot">
@@ -292,6 +327,7 @@ function paint(day) {
     placeRider(pt.x, pt.y);
   }
   setHud(day, km, climb, text);
+  document.querySelectorAll('#days .day[data-i]').forEach(r => r.classList.toggle('act', +r.dataset.i === day));
   curDay = day;
 }
 function stopPlay() {
@@ -346,6 +382,36 @@ document.getElementById('btnReset').addEventListener('click', () => {
   if (playing) stopPlay();
   paint(6);
 });
+
+/* ---------- 逐日明细 ---------- */
+(function buildDays() {
+  const box = document.getElementById('days');
+  let ck = 0, cc = 0;
+  segs.forEach((s, i) => {
+    ck += s.km; cc += s.climb;
+    const row = document.createElement('div');
+    row.className = 'day' + (s.done ? ' done' : '') + (s.lvl === '爬坡日' ? ' hill' : '');
+    row.dataset.i = i + 1;
+    row.innerHTML =
+      '<div class="d">' + s.day + '</div>' +
+      '<div class="r">' + s.route.replace('→', ' → ') +
+        '<small>' + s.lvl + ' · 累计 ' + fmt(ck) + ' km / ' + fmt(cc) + ' m</small></div>' +
+      '<div class="num"><b>' + s.km + '</b> km · <b>' + s.climb + '</b> m' +
+        '<small>' + (s.done ? '✓ 已完骑' : '待骑') + '</small></div>';
+    row.addEventListener('click', () => {
+      if (playing) stopPlay();
+      paint(i + 1);
+    });
+    box.appendChild(row);
+  });
+  const t = document.createElement('div');
+  t.className = 'day total';
+  t.innerHTML = '<div class="d">合计</div>' +
+    '<div class="r">11 天环岛全程<small>3 个爬坡日 · 11/17 → 11/27</small></div>' +
+    '<div class="num"><b>' + DATA.total_km + '</b> km · <b>' + fmt(DATA.total_climb) + '</b> m' +
+    '<small>已完成 ' + DATA.done_km + ' km</small></div>';
+  box.appendChild(t);
+})();
 
 paint(6);   // 默认：11/22 收队（572 km）
 </script>
