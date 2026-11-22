@@ -65,9 +65,10 @@
   .st-label.start { fill: #ffe9b8; font-weight: 700; }
 
   /* 逐日明细 */
-  .days { margin-top: 16px; }
-  .days-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 9px; }
-  .days-h h2 { font-size: 14px; margin: 0; letter-spacing: .3px; }
+  .days { margin-top: 22px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.1); }
+  .days-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0 0 10px; }
+  .days-h h2 { font-size: 16px; margin: 0; letter-spacing: .3px; }
+  .days-h h2::before { content: '\2193  '; color: #ff9f43; }
   .days-h span { font-size: 11.5px; color: #7fa3bd; }
   .day {
     display: grid; grid-template-columns: 42px 1fr auto; gap: 4px 10px; align-items: center;
